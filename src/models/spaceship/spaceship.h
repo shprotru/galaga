@@ -4,11 +4,14 @@
 #include "../model.h"
 
 namespace SPACESHIP {
-    class spaceship : MODEL::PModel, MODEL::IModel
+    class spaceship : MODEL::Basic, MODEL::PModel, MODEL::IModel
     {
-        static const uint16_t anim_death_amount_frames = 4;
+        double lastMouseOx;
+        double lastMouseOy;
+        long tRemForStep; // остаток времени от дельты при движении
+        static const uint16_t framesAmountAnimDeath = 4;
         ASSETS::spriteInfo *sprite;
-        std::array<ASSETS::spriteInfo *, anim_death_amount_frames> animDeath;
+        std::array<ASSETS::spriteInfo *, framesAmountAnimDeath> animDeath;
     public:
         spaceship(
             SDL_Renderer* renderer,
@@ -17,10 +20,11 @@ namespace SPACESHIP {
         );
         ~spaceship();
 
-        void move();
+        void move(long timeDelta);
         void render();
-        void setInitPosition( uint16_t screen_w, uint16_t screen_h );
+        void setInitPosition( uint16_t screenW, uint16_t screenH );
 
+        void recalcAngle();
         void onMouseMove( double mouseOx, double mouseOy );
         void onMoveLeft();
         void onMoveRight();

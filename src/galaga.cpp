@@ -1,7 +1,13 @@
+#include <chrono>
+#include <array>
+
 #include "galaga.h"
 #include "config.h"
 #include "misc/defer.h"
+#include "models/enemy1/enemy1.h"
+#include "models/enemy2/enemy2.h"
 #include "models/spaceship/spaceship.h"
+#include "models/background/background.h"
 
 namespace GALAGA {
     const char *WINDOW_CAPTION = "Galaga4Playrix";
@@ -98,8 +104,54 @@ namespace GALAGA {
 
         setCursor( asLdr );
 
+        const long timeScalingFactor = 10000;
+        auto tStart = std::chrono::steady_clock::now();
+
+        auto bg = BACKGROUND::background( gRenderer, flip, asLdr );
+        bg.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
+
         auto p1 = SPACESHIP::spaceship( gRenderer, flip, asLdr );
         p1.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
+
+        static const uint8_t enAmountTopLine = 4;
+        std::array<ENEMY1::enemy1 *, enAmountTopLine> enTopLine;    // enemies, верхний ряд
+        for ( auto it = std::make_pair( enTopLine.begin(), 0 );
+              it.first != enTopLine.end();
+              ++it.first
+        ) {
+            *it.first = new ENEMY1::enemy1( gRenderer, flip, asLdr );
+            (*it.first)->setPosition( 90 + 120 * it.second, 60 );
+            it.second++;
+        }
+
+        defer(
+            for ( auto it = enTopLine.begin();
+                  it != enTopLine.end();
+                  ++it
+            ) {
+                delete *it;
+            }
+        );
+
+        static const uint8_t enAmountBottomLine = 5;
+        std::array<ENEMY2::enemy2 *, enAmountBottomLine> enBottomLine; // enemies, нижний ряд
+        for ( auto it = std::make_pair( enBottomLine.begin(), 0 );
+              it.first != enBottomLine.end();
+              ++it.first
+        ) {
+            *it.first = new ENEMY2::enemy2( gRenderer, flip, asLdr );
+            (*it.first)->setPosition( 50 + 120 * it.second, 170 );
+            it.second++;
+        }
+
+        defer(
+            for ( auto it = enBottomLine.begin();
+                  it != enBottomLine.end();
+                  ++it
+            ) {
+                delete *it;
+            }
+        );
 
         // Флаг выхода из цикла опроса
         bool quit = false;
@@ -145,13 +197,48 @@ namespace GALAGA {
             // SDL_Rect rect = { 0, 0, 248, 248 };
             // SDL_RenderFillRect( gRenderer, &rect );
 
+            const auto tCurrent = std::chrono::steady_clock::now();
+            const auto tDiff = ( tCurrent - tStart ).count();
+            const auto tDiffPrecalc = tDiff / timeScalingFactor;
+//            tRemaining += tDiff % in1ms;
+
             // Движемся
-            p1.move();
-            // Отрисовываемся
+            bg.move(tDiffPrecalc);
+            p1.move(tDiffPrecalc);
+            for ( auto it = enTopLine.begin();
+                  it != enTopLine.end();
+                  ++it
+            ) {
+                (*it)->move(tDiffPrecalc);
+            }
+            for ( auto it = enBottomLine.begin();
+                  it != enBottomLine.end();
+                  ++it
+            ) {
+                (*it)->move(tDiffPrecalc);
+            }
+
+            // Отрисовываем
+            bg.render();
             p1.render();
+            for ( auto it = enTopLine.begin();
+                  it != enTopLine.end();
+                  ++it
+            ) {
+                (*it)->render();
+            }
+            for ( auto it = enBottomLine.begin();
+                  it != enBottomLine.end();
+                  ++it
+            ) {
+                (*it)->render();
+            }
 
             // Update screen
             SDL_RenderPresent( gRenderer );
+
+            tStart = tCurrent;
+            SDL_Delay(1);
         }
     }
 }

@@ -42,4 +42,94 @@ namespace ENEMY1 {
         }
         std::cout << typeid(enemy1).name() << " dying sprites freed" << std::endl;
     }
+
+    void enemy1::setInitPosition (
+            uint16_t /* screenW */,
+            uint16_t /* screenH */
+    ) {
+        if ( state != MODEL::Mstate::initialized ) {
+            std::cout << typeid(enemy1).name() << " already initialized" << std::endl;
+            return;
+        }
+    }
+
+    void enemy1::setPosition (
+            uint16_t posX,
+            uint16_t posY
+    ) {
+        currAnimFrame = 1; // для инициализации
+        state = MODEL::Mstate::alive;
+
+        const uint16_t w = animWalk[currAnimFrame]->width * SCALING_FACTOR;
+        const uint16_t h = animWalk[currAnimFrame]->heigth * SCALING_FACTOR;
+
+        halfWidth = w / 2;
+        halfHeight =  h / 2;
+
+        position = {
+            posX - halfWidth,
+            posY - halfHeight,
+            w,
+            h
+        };
+    }
+
+    void enemy1::move(long timeDelta)
+    {
+        if ( state == MODEL::Mstate::initialized ) {
+            return;
+        }
+
+        const long onePxPer100ms = 20000; // совершаем движение раз в x ми? секунд
+
+        tRemForStep += timeDelta % onePxPer100ms;
+        const int steps = ( timeDelta + tRemForStep ) / onePxPer100ms;
+
+        if ( steps == 0 )
+            return;
+
+        if ( steps * onePxPer100ms < tRemForStep)
+            tRemForStep -= steps * onePxPer100ms;
+
+        currAnimFrame++;
+        if ( currAnimFrame >= anim_amount_frames )
+            currAnimFrame = 0;
+
+        switch ( state ) {
+        case MODEL::Mstate::alive:
+            if ( ms[ MODEL::Mdirection::left ] >= 1 ) {
+                ms[ MODEL::Mdirection::left ] -= 1;
+                position.x -= SCALING_FACTOR; // ( ms[ MODEL::Mdirection::left ] / SCALING_FACTOR + 1 );
+            }
+
+            if ( ms[ MODEL::Mdirection::right ] >= 1 ) {
+                ms[ MODEL::Mdirection::right ] -= 1;
+                position.x += SCALING_FACTOR; // ( ms[ MODEL::Mdirection::right ] / SCALING_FACTOR + 1 );
+            }
+
+            break;
+        case MODEL::Mstate::appearance:
+            break;
+        case MODEL::Mstate::dying:
+            SDL_RenderCopyEx( gRenderer, animDying[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );
+            break;
+        default:
+            break;
+        }
+    }
+
+    void enemy1::render()
+    {
+        switch ( state ) {
+        case MODEL::Mstate::appearance:
+        case MODEL::Mstate::alive:
+            SDL_RenderCopyEx( gRenderer, animWalk[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );
+            break;
+        case MODEL::Mstate::dying:
+            SDL_RenderCopyEx( gRenderer, animDying[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );
+            break;
+        default:
+            break;
+        }
+    }
 }

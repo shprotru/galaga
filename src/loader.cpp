@@ -71,11 +71,6 @@ namespace ASSETS {
             return nullptr;
         }
 
-        if ( dibHdr->biBitCount != 24 ) {
-            std::cout << "Failure: assets loader supports only 24bpp images" << std::endl;
-            return nullptr;
-        }
-
         auto assetFormat = dibHdr->biBitCount / CHAR_BIT;
 
         auto assetPitch = assetFormat * dibHdr->biWidth +             // pitch
@@ -88,7 +83,7 @@ namespace ASSETS {
 //                    (~assetFormat);                                      // padding
 
         srfcBg = SDL_CreateRGBSurfaceWithFormatFrom (
-            (unsigned char *)&gameAssets[bmpHdr->bfOffBits],
+            (unsigned char *)&gameBg[bmpHdr->bfOffBits],
             dibHdr->biWidth,
             dibHdr->biHeight,
             dibHdr->biBitCount,

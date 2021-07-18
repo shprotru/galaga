@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "spaceship.h"
-#include "../../config.h"
 #include "../../misc/defer.h"
 
 namespace SPACESHIP {
@@ -35,9 +34,9 @@ namespace SPACESHIP {
         std::cout << typeid(spaceship).name() << " sprites freed" << std::endl;
     }
 
-    void spaceship::setInitPosition(
-            uint16_t screen_w,
-            uint16_t screen_h
+    void spaceship::setInitPosition (
+            uint16_t screenW,
+            uint16_t screenH
     ) {
         if ( state != MODEL::Mstate::initialized ) {
             std::cout << typeid(spaceship).name() << " already initialized" << std::endl;
@@ -53,27 +52,31 @@ namespace SPACESHIP {
         halfHeight =  h / 2;
 
         position = {
-            screen_w / 2 - halfWidth,
-            screen_h - h,
+            screenW / 2 - halfWidth,
+            screenH - h,
             w,
             h
         };
     }
 
-    void spaceship::onMouseMove( double mouseOx, double mouseOy ) {
-        mouseOx -= halfWidth;
-        mouseOy -= halfHeight;
-
+    void spaceship::recalcAngle() {
         const double lenAB = std::sqrt (
-            std::pow( mouseOx - position.x, 2 ) +
-            std::pow( mouseOy - position.y, 2 )
+            std::pow( lastMouseOx - position.x, 2 ) +
+            std::pow( lastMouseOy - position.y, 2 )
         );
 
-        const double lenBC = position.y - mouseOy;
+        const double lenBC = position.y - lastMouseOy;
 
         angle = std::acos( lenBC / lenAB ) * 180 / M_PI;
-        if ( mouseOx < position.x )
+        if ( lastMouseOx < position.x )
             angle *= -1.0;
+    }
+
+    void spaceship::onMouseMove( double mouseOx, double mouseOy ) {
+        lastMouseOx = mouseOx - halfWidth;
+        lastMouseOy = mouseOy - halfHeight;
+
+        recalcAngle();
     }
 
     void spaceship::onMoveLeft()
@@ -83,12 +86,13 @@ namespace SPACESHIP {
         }
 
         if ( ms[ MODEL::Mdirection::right ] > 0 ) {
-            ms[ MODEL::Mdirection::right ] -= 1;
+            ms[ MODEL::Mdirection::right ] -= SCALING_FACTOR;
         } else if ( ms[ MODEL::Mdirection::right ] < 0 ) {
             ms[ MODEL::Mdirection::right ] = 0;
         }
 
         ms[ MODEL::Mdirection::left ] += SCALING_FACTOR;
+        recalcAngle();
     }
 
     void spaceship::onMoveRight()
@@ -98,12 +102,13 @@ namespace SPACESHIP {
         }
 
         if ( ms[ MODEL::Mdirection::left ] > 0 ) {
-            ms[ MODEL::Mdirection::left ] -= 1;
+            ms[ MODEL::Mdirection::left ] -= SCALING_FACTOR;
         } else if ( ms[ MODEL::Mdirection::left ] < 0 ) {
             ms[ MODEL::Mdirection::left ] = 0;
         }
 
         ms[ MODEL::Mdirection::right ] += SCALING_FACTOR;
+        recalcAngle();
     }
 
     void spaceship::onFire()
@@ -113,16 +118,28 @@ namespace SPACESHIP {
         }
     }
 
-    void spaceship::move()
+    // TODO: перемещение сделано отвратительно, переделать
+    void spaceship::move(long timeDelta)
     {
+        const long onePxPer100ms = 400; // двигаем на 1 пиксель раз в 2000 ми? секунд
+
+        tRemForStep += timeDelta % onePxPer100ms;
+        const int steps = ( timeDelta + tRemForStep ) / onePxPer100ms;
+
+        if ( steps * onePxPer100ms < tRemForStep)
+            tRemForStep -= steps * onePxPer100ms;
+
+//        if ( steps == 0 )
+//            return;
+
         if ( ms[ MODEL::Mdirection::left ] >= 1 ) {
             ms[ MODEL::Mdirection::left ] -= 1;
-            position.x -= 1; // ( ms[ MODEL::Mdirection::left ] / SCALING_FACTOR + 1 );
+            position.x -= ms[ MODEL::Mdirection::left ]; // ( ms[ MODEL::Mdirection::left ] / SCALING_FACTOR + 1 );
         }
 
         if ( ms[ MODEL::Mdirection::right ] >= 1 ) {
             ms[ MODEL::Mdirection::right ] -= 1;
-            position.x += 1; // ( ms[ MODEL::Mdirection::right ] / SCALING_FACTOR + 1 );
+            position.x += ms[ MODEL::Mdirection::right ]; // ( ms[ MODEL::Mdirection::right ] / SCALING_FACTOR + 1 );
         }
     }
 

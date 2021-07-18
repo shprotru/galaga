@@ -54,10 +54,12 @@ add_executable( MyProject
     src/assets_main.cpp
     src/loader.cpp
     src/spriteInfo.cpp
-    src/background.cpp
     src/models/model.cpp
+    src/models/basic.cpp
     src/models/enemy1/enemy1.cpp
+    src/models/enemy2/enemy2.cpp
     src/models/spaceship/spaceship.cpp
+    src/models/background/background.cpp
 )
 target_link_libraries(MyProject ${SDL2_LIBRARY})
 install(TARGETS MyProject RUNTIME DESTINATION ${BIN_DIR})

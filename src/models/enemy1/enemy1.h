@@ -4,8 +4,10 @@
 #include "../model.h"
 
 namespace ENEMY1 {
-    class enemy1 : MODEL::PModel, MODEL::IModel
+    class enemy1 : MODEL::Basic, MODEL::PModel, MODEL::IModel
     {
+        uint16_t currAnimFrame; // текущий фрейм анимации
+        long tRemForStep; // остаток времени от дельты при движении
         static const uint16_t anim_amount_frames = 2;
         static const uint16_t anim_death_amount_frames = 5;
         std::array<ASSETS::spriteInfo *, anim_death_amount_frames> animWalk;
@@ -17,6 +19,11 @@ namespace ENEMY1 {
             ASSETS::loader &ldr
         );
         ~enemy1();
+
+        void move(long timeDelta);
+        void render();
+        void setInitPosition( uint16_t screenW, uint16_t screenH );
+        void setPosition( uint16_t posX, uint16_t posY );
     };
 }
 
