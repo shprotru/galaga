@@ -10,7 +10,7 @@
 namespace BACKGROUND {
     class background : MODEL::Basic, MODEL::IModel
     {
-        long tRemForStep; // остаток времени от дельты при движении
+        double tRemForStep; // остаток времени от дельты при движении
         int assetHeight;  // высота изображения
         static const uint16_t framesAmountCntBg = 2;
         //                                       si       pos

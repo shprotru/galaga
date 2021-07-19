@@ -48,17 +48,16 @@ namespace BACKGROUND {
     }
 
     void background::move(double timeDelta) {
-        const long msPerMovement = 2000; // совершаем движение раз в x ми? секунд
+        const double msPerMovement = 0.001; // совершаем движение раз в x ми? секунд
 
-//        tRemForStep += timeDelta % msPerMovement;
-        const int steps = ( timeDelta + tRemForStep ) / msPerMovement;
-
+        tRemForStep += timeDelta;
+        const long steps = tRemForStep / msPerMovement;
         if ( steps == 0 )
             return;
 
         const long stepPoints = steps * msPerMovement;
 
-        if ( stepPoints < tRemForStep)
+        if ( stepPoints <= tRemForStep)
             tRemForStep -= stepPoints;
 
         for( auto it = sprites.begin();
@@ -69,7 +68,7 @@ namespace BACKGROUND {
                 (*it).second.y = -assetHeight;
             }
 
-            (*it).second.y += steps;
+            (*it).second.y ++;
         }
     }
 
