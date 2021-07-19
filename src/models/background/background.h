@@ -23,7 +23,7 @@ namespace BACKGROUND {
         );
         ~background();
 
-        void move(long timeDelta);
+        void move(double timeDelta);
         void render();
         void setInitPosition( uint16_t screenW, uint16_t screenH );
     };

@@ -6,6 +6,10 @@
 namespace SPACESHIP {
     class spaceship : MODEL::Basic, MODEL::PModel, MODEL::IModel
     {
+        int limitAreaW;
+        int limitAreaH;
+        uint16_t spriteWidth; // ширина видимого спрайта
+        uint16_t spriteHeight; // высота видимого спрайта
         double lastMouseOx;
         double lastMouseOy;
         long tRemForStep; // остаток времени от дельты при движении
@@ -20,7 +24,7 @@ namespace SPACESHIP {
         );
         ~spaceship();
 
-        void move(long timeDelta);
+        void move(double timeDelta);
         void render();
         void setInitPosition( uint16_t screenW, uint16_t screenH );
 

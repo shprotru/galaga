@@ -23,7 +23,7 @@ namespace MODEL {
     class IModel
     {
     public:
-        virtual void move(long timeDelta) = 0;
+        virtual void move(double timeDelta) = 0;
         virtual void render() = 0;
         virtual void setInitPosition( uint16_t screenW, uint16_t screenH ) = 0;
     };

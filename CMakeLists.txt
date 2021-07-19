@@ -54,6 +54,7 @@ add_executable( MyProject
     src/assets_main.cpp
     src/loader.cpp
     src/spriteInfo.cpp
+    src/timer.cpp
     src/models/model.cpp
     src/models/basic.cpp
     src/models/enemy1/enemy1.cpp

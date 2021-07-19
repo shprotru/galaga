@@ -75,25 +75,26 @@ namespace ENEMY1 {
         };
     }
 
-    void enemy1::move(long timeDelta)
+    void enemy1::move(double timeDelta)
     {
         if ( state == MODEL::Mstate::initialized ) {
             return;
         }
 
-        static const long onePxPer100ms = 10000; // совершаем движение раз в x ми? секунд
+        static const double msPerMovement = 1.5; // совершаем движение раз в 1.5 секунды
 
-        tRemForStep += timeDelta % onePxPer100ms;
-        const int steps = ( timeDelta + tRemForStep ) / onePxPer100ms;
-
+        tRemForStep += timeDelta;
+        const long steps = tRemForStep / msPerMovement;
         if ( steps == 0 )
             return;
 
-        if ( steps * onePxPer100ms < tRemForStep)
-            tRemForStep -= steps * onePxPer100ms;
+        const long stepPoints = steps * msPerMovement;
+
+        if ( stepPoints <= tRemForStep)
+            tRemForStep -= stepPoints;
 
         currAnimFrame++;
-        if ( currAnimFrame >= anim_amount_frames )
+        if ( currAnimFrame == anim_amount_frames )
             currAnimFrame = 0;
 
         switch ( state ) {
@@ -112,7 +113,6 @@ namespace ENEMY1 {
         case MODEL::Mstate::appearance:
             break;
         case MODEL::Mstate::dying:
-            SDL_RenderCopyEx( gRenderer, animDying[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );
             break;
         default:
             break;

@@ -1,13 +1,14 @@
 #include <chrono>
 #include <array>
 
-#include "galaga.h"
+#include "models/background/background.h"
 #include "config.h"
 #include "misc/defer.h"
 #include "models/enemy1/enemy1.h"
 #include "models/enemy2/enemy2.h"
+#include "galaga.h"
+#include "timer.h"
 #include "models/spaceship/spaceship.h"
-#include "models/background/background.h"
 
 namespace GALAGA {
     const char *WINDOW_CAPTION = "Galaga4Playrix";
@@ -98,14 +99,14 @@ namespace GALAGA {
         SDL_Event ev;
 
         // Setup flip
-        SDL_RendererFlip flip = SDL_RendererFlip( SDL_FLIP_VERTICAL );
+        auto flip = SDL_RendererFlip( SDL_FLIP_VERTICAL );
 
         auto asLdr = ASSETS::loader( gRenderer );
 
         setCursor( asLdr );
 
         const long timeScalingFactor = 10000;
-        auto tCurrent = std::chrono::steady_clock::now();
+        auto mTimer = TIMER::timer();
 
         auto bg = BACKGROUND::background( gRenderer, flip, asLdr );
         bg.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
@@ -159,6 +160,8 @@ namespace GALAGA {
         // Пока программа работает
         while( !quit )
         {
+            mTimer.update();
+
             if ( SDL_PollEvent( &ev ) != 0 )
             {
                 switch( ev.type ) {
@@ -188,58 +191,51 @@ namespace GALAGA {
                 }
             }
 
-            // Initialize renderer color
-            SDL_SetRenderDrawColor( gRenderer, 111, 111, 111, 0xff );
+            if ( mTimer.delta() >= ( 1.0 / FRAME_RATE ) ) {
+                // Initialize renderer color
+                SDL_SetRenderDrawColor( gRenderer, 111, 111, 111, 0xff );
 
-            // Clear screen
-            SDL_RenderClear( gRenderer );
+                // Clear screen
+                SDL_RenderClear( gRenderer );
 
-            // SDL_SetRenderDrawColor( gRenderer, 0xff, 0xff, 0x00, 0xff );
-            // SDL_Rect rect = { 0, 0, 248, 248 };
-            // SDL_RenderFillRect( gRenderer, &rect );
+                // Перемещения
+                bg.move(mTimer.delta());
+                p1.move(mTimer.delta());
+                for ( auto it = enTopLine.begin();
+                      it != enTopLine.end();
+                      ++it
+                ) {
+                    (*it)->move(mTimer.delta());
+                }
+                for ( auto it = enBottomLine.begin();
+                      it != enBottomLine.end();
+                      ++it
+                ) {
+                    (*it)->move(mTimer.delta());
+                }
 
-            const auto tUpdatedCurrent = std::chrono::steady_clock::now();
-            const auto tDiff = ( tUpdatedCurrent - tCurrent ).count();
-            const auto tDiffPrecalc = tDiff / timeScalingFactor;
-//            tRemaining += tDiff % in1ms;
+                mTimer.reset();
 
-            // Перемещения
-            bg.move(tDiffPrecalc);
-            p1.move(tDiffPrecalc);
-            for ( auto it = enTopLine.begin();
-                  it != enTopLine.end();
-                  ++it
-            ) {
-                (*it)->move(tDiffPrecalc);
+                // Отрисовываем
+                bg.render();
+                p1.render();
+                for ( auto it = enTopLine.begin();
+                      it != enTopLine.end();
+                      ++it
+                ) {
+                    (*it)->render();
+                }
+                for ( auto it = enBottomLine.begin();
+                      it != enBottomLine.end();
+                      ++it
+                ) {
+                    (*it)->render();
+                }
+
+                // Update screen
+                SDL_RenderPresent( gRenderer );
+                SDL_Delay(1);
             }
-            for ( auto it = enBottomLine.begin();
-                  it != enBottomLine.end();
-                  ++it
-            ) {
-                (*it)->move(tDiffPrecalc);
-            }
-
-            // Отрисовываем
-            bg.render();
-            p1.render();
-            for ( auto it = enTopLine.begin();
-                  it != enTopLine.end();
-                  ++it
-            ) {
-                (*it)->render();
-            }
-            for ( auto it = enBottomLine.begin();
-                  it != enBottomLine.end();
-                  ++it
-            ) {
-                (*it)->render();
-            }
-
-            // Update screen
-            SDL_RenderPresent( gRenderer );
-
-            tCurrent = tUpdatedCurrent;
-            SDL_Delay(1);
         }
     }
 }

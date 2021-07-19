@@ -47,17 +47,19 @@ namespace BACKGROUND {
         };
     }
 
-    void background::move(long timeDelta) {
-        const long onePxPer100ms = 2000; // совершаем движение раз в x ми? секунд
+    void background::move(double timeDelta) {
+        const long msPerMovement = 2000; // совершаем движение раз в x ми? секунд
 
-        tRemForStep += timeDelta % onePxPer100ms;
-        const int steps = ( timeDelta + tRemForStep ) / onePxPer100ms;
+//        tRemForStep += timeDelta % msPerMovement;
+        const int steps = ( timeDelta + tRemForStep ) / msPerMovement;
 
         if ( steps == 0 )
             return;
 
-        if ( steps * onePxPer100ms < tRemForStep)
-            tRemForStep -= steps * onePxPer100ms;
+        const long stepPoints = steps * msPerMovement;
+
+        if ( stepPoints < tRemForStep)
+            tRemForStep -= stepPoints;
 
         for( auto it = sprites.begin();
                 it != sprites.end();

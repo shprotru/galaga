@@ -4,6 +4,7 @@
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
 
-static const unsigned int SCALING_FACTOR = 6;
+const double FRAME_RATE = 60.0;
+const unsigned int SCALING_FACTOR = 6;
 
 #endif // CONFIG_H

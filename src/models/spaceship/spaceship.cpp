@@ -51,6 +51,11 @@ namespace SPACESHIP {
         halfWidth = w / 2;
         halfHeight =  h / 2;
 
+        spriteWidth = w;
+        spriteHeight = h;
+        limitAreaW = screenW;
+        limitAreaH = screenH;
+
         position = {
             screenW / 2 - halfWidth,
             screenH - h,
@@ -119,18 +124,20 @@ namespace SPACESHIP {
     }
 
     // TODO: перемещение сделано отвратительно, переделать
-    void spaceship::move(long timeDelta)
+    void spaceship::move(double timeDelta)
     {
-        const long onePxPer100ms = 400; // двигаем на 1 пиксель раз в 2000 ми? секунд
+        const long msPerMovement = 400; // двигаем на 1 пиксель раз в 2000 ми? секунд
 
-        tRemForStep += timeDelta % onePxPer100ms;
-        const int steps = ( timeDelta + tRemForStep ) / onePxPer100ms;
+//        tRemForStep += timeDelta % msPerMovement;
+        const int steps = ( timeDelta + tRemForStep ) / msPerMovement;
 
-        if ( steps * onePxPer100ms < tRemForStep)
-            tRemForStep -= steps * onePxPer100ms;
+        //        if ( steps == 0 )
+        //            return;
 
-//        if ( steps == 0 )
-//            return;
+        const long stepPoints = steps * msPerMovement;
+
+        if ( stepPoints < tRemForStep)
+            tRemForStep -= stepPoints;
 
         if ( ms[ MODEL::Mdirection::left ] >= 1 ) {
             ms[ MODEL::Mdirection::left ] -= 1;
@@ -140,6 +147,16 @@ namespace SPACESHIP {
         if ( ms[ MODEL::Mdirection::right ] >= 1 ) {
             ms[ MODEL::Mdirection::right ] -= 1;
             position.x += ms[ MODEL::Mdirection::right ]; // ( ms[ MODEL::Mdirection::right ] / SCALING_FACTOR + 1 );
+        }
+
+        if ( position.x < 0 ) {
+            ms[ MODEL::Mdirection::right ] += ms[ MODEL::Mdirection::left ];
+            ms[ MODEL::Mdirection::left ] = 0;
+            position.x = 0;
+        } else if ( position.x > static_cast<int>( SCREEN_WIDTH - spriteWidth ) ) {
+            ms[ MODEL::Mdirection::left ] += ms[ MODEL::Mdirection::right ];
+            ms[ MODEL::Mdirection::right ] = 0;
+            position.x = static_cast<int>( SCREEN_WIDTH - spriteWidth );
         }
     }
 
