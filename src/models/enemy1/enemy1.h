@@ -12,6 +12,7 @@ namespace ENEMY1 {
         static const uint16_t anim_death_amount_frames = 5;
         std::array<ASSETS::spriteInfo *, anim_death_amount_frames> animWalk;
         std::array<ASSETS::spriteInfo *, anim_death_amount_frames> animDying;
+        int id;
     public:
         enemy1(
             SDL_Renderer* renderer,
@@ -24,6 +25,9 @@ namespace ENEMY1 {
         void render();
         void setInitPosition( uint16_t screenW, uint16_t screenH );
         void setPosition( uint16_t posX, uint16_t posY );
+        void setID( int _id ) {
+            id = _id;
+        }
     };
 }
 

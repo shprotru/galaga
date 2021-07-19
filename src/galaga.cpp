@@ -105,7 +105,7 @@ namespace GALAGA {
         setCursor( asLdr );
 
         const long timeScalingFactor = 10000;
-        auto tStart = std::chrono::steady_clock::now();
+        auto tCurrent = std::chrono::steady_clock::now();
 
         auto bg = BACKGROUND::background( gRenderer, flip, asLdr );
         bg.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
@@ -121,6 +121,7 @@ namespace GALAGA {
         ) {
             *it.first = new ENEMY1::enemy1( gRenderer, flip, asLdr );
             (*it.first)->setPosition( 90 + 120 * it.second, 60 );
+            (*it.first)->setID(it.second);
             it.second++;
         }
 
@@ -136,21 +137,21 @@ namespace GALAGA {
         static const uint8_t enAmountBottomLine = 5;
         std::array<ENEMY2::enemy2 *, enAmountBottomLine> enBottomLine; // enemies, нижний ряд
         for ( auto it = std::make_pair( enBottomLine.begin(), 0 );
-              it.first != enBottomLine.end();
-              ++it.first
+             it.first != enBottomLine.end();
+             ++it.first
         ) {
-            *it.first = new ENEMY2::enemy2( gRenderer, flip, asLdr );
-            (*it.first)->setPosition( 50 + 120 * it.second, 170 );
-            it.second++;
+           *it.first = new ENEMY2::enemy2( gRenderer, flip, asLdr );
+           (*it.first)->setPosition( 50 + 120 * it.second, 170 );
+           it.second++;
         }
 
         defer(
-            for ( auto it = enBottomLine.begin();
-                  it != enBottomLine.end();
-                  ++it
-            ) {
-                delete *it;
-            }
+           for ( auto it = enBottomLine.begin();
+                 it != enBottomLine.end();
+                 ++it
+           ) {
+               delete *it;
+           }
         );
 
         // Флаг выхода из цикла опроса
@@ -197,12 +198,12 @@ namespace GALAGA {
             // SDL_Rect rect = { 0, 0, 248, 248 };
             // SDL_RenderFillRect( gRenderer, &rect );
 
-            const auto tCurrent = std::chrono::steady_clock::now();
-            const auto tDiff = ( tCurrent - tStart ).count();
+            const auto tUpdatedCurrent = std::chrono::steady_clock::now();
+            const auto tDiff = ( tUpdatedCurrent - tCurrent ).count();
             const auto tDiffPrecalc = tDiff / timeScalingFactor;
 //            tRemaining += tDiff % in1ms;
 
-            // Движемся
+            // Перемещения
             bg.move(tDiffPrecalc);
             p1.move(tDiffPrecalc);
             for ( auto it = enTopLine.begin();
@@ -237,7 +238,7 @@ namespace GALAGA {
             // Update screen
             SDL_RenderPresent( gRenderer );
 
-            tStart = tCurrent;
+            tCurrent = tUpdatedCurrent;
             SDL_Delay(1);
         }
     }

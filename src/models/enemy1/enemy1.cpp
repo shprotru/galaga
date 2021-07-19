@@ -57,6 +57,7 @@ namespace ENEMY1 {
             uint16_t posX,
             uint16_t posY
     ) {
+        tRemForStep = 0;
         currAnimFrame = 1; // для инициализации
         state = MODEL::Mstate::alive;
 
@@ -80,7 +81,7 @@ namespace ENEMY1 {
             return;
         }
 
-        const long onePxPer100ms = 20000; // совершаем движение раз в x ми? секунд
+        static const long onePxPer100ms = 10000; // совершаем движение раз в x ми? секунд
 
         tRemForStep += timeDelta % onePxPer100ms;
         const int steps = ( timeDelta + tRemForStep ) / onePxPer100ms;
