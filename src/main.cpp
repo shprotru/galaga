@@ -9,8 +9,7 @@ int main() {
         return EXIT_FAILURE;
 	}
 
-    GALAGA::galaga game = GALAGA::galaga();
-
+    GALAGA::galaga game;
     game.mainLoop();
 
 	SDL_Quit();

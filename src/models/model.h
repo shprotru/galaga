@@ -23,7 +23,7 @@ namespace MODEL {
     class IModel
     {
     public:
-        virtual void move(double timeDelta) = 0;
+        virtual void integrate( uint8_t state, unsigned int time, unsigned int timeDelta ) = 0;
         virtual void render() = 0;
         virtual void setInitPosition( uint16_t screenW, uint16_t screenH ) = 0;
     };
@@ -34,6 +34,7 @@ namespace MODEL {
         double angle; // угол, под которым отображаем объект
         SDL_Renderer* gRenderer;
         SDL_RendererFlip flip;
+        long accumForStep; // остаток времени от дельты при движении
         static const uint8_t amountOfDirections = 4; // длинна enum'а Mdirection
         std::array<int16_t, amountOfDirections> ms; // скорость перемещения
         double movementDirection; // направление перемещения(задаётся через угол)

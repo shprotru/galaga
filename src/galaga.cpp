@@ -1,5 +1,5 @@
-#include <chrono>
 #include <array>
+#include <chrono>
 
 #include "models/background/background.h"
 #include "config.h"
@@ -7,11 +7,18 @@
 #include "models/enemy1/enemy1.h"
 #include "models/enemy2/enemy2.h"
 #include "galaga.h"
-#include "timer.h"
 #include "models/spaceship/spaceship.h"
 
 namespace GALAGA {
     const char *WINDOW_CAPTION = "Galaga4Playrix";
+
+    enum Gstate : uint8_t {
+        menu = 0,
+        level_intro,
+        gameplay,
+        pause,
+        game_over,
+    };
 
     galaga::galaga()
     {
@@ -106,7 +113,6 @@ namespace GALAGA {
         setCursor( asLdr );
 
         const long timeScalingFactor = 10000;
-        auto mTimer = TIMER::timer();
 
         auto bg = BACKGROUND::background( gRenderer, flip, asLdr );
         bg.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
@@ -155,13 +161,14 @@ namespace GALAGA {
            }
         );
 
+        unsigned int t = 0; // Всего прошло времени
+        auto currentTime = SDL_GetTicks();
+
         // Флаг выхода из цикла опроса
         bool quit = false;
         // Пока программа работает
         while( !quit )
         {
-            mTimer.update();
-
             if ( SDL_PollEvent( &ev ) != 0 )
             {
                 switch( ev.type ) {
@@ -191,51 +198,50 @@ namespace GALAGA {
                 }
             }
 
-            if ( mTimer.delta() >= ( 1.0 / FRAME_RATE ) ) {
-                // Initialize renderer color
-                SDL_SetRenderDrawColor( gRenderer, 111, 111, 111, 0xff );
+            auto newTime = SDL_GetTicks();
+            auto frameTime = newTime - currentTime; // времени пришлось на предыдущий фрейм
+            currentTime = newTime;
 
-                // Clear screen
-                SDL_RenderClear( gRenderer );
-
-                // Перемещения
-                bg.move(mTimer.delta());
-                p1.move(mTimer.delta());
-                for ( auto it = enTopLine.begin();
-                      it != enTopLine.end();
-                      ++it
-                ) {
-                    (*it)->move(mTimer.delta());
-                }
-                for ( auto it = enBottomLine.begin();
-                      it != enBottomLine.end();
-                      ++it
-                ) {
-                    (*it)->move(mTimer.delta());
-                }
-
-                mTimer.reset();
-
-                // Отрисовываем
-                bg.render();
-                p1.render();
-                for ( auto it = enTopLine.begin();
-                      it != enTopLine.end();
-                      ++it
-                ) {
-                    (*it)->render();
-                }
-                for ( auto it = enBottomLine.begin();
-                      it != enBottomLine.end();
-                      ++it
-                ) {
-                    (*it)->render();
-                }
-
-                // Update screen
-                SDL_RenderPresent( gRenderer );
-                SDL_Delay(1);
+            // Перемещения
+            bg.integrate( Gstate::gameplay, t, frameTime );
+            p1.integrate( Gstate::gameplay, t, frameTime );
+            for ( auto it = enTopLine.begin();
+                  it != enTopLine.end();
+                  ++it
+            ) {
+                (*it)->integrate( Gstate::gameplay, t, frameTime );
             }
+            for ( auto it = enBottomLine.begin();
+                  it != enBottomLine.end();
+                  ++it
+            ) {
+                (*it)->integrate( Gstate::gameplay, t, frameTime );
+            }
+
+            t += frameTime;
+
+            // Отрисовываем
+            SDL_SetRenderDrawColor( gRenderer, 111, 111, 111, 0xff );
+            SDL_RenderClear( gRenderer );
+
+            bg.render();
+            p1.render();
+            for ( auto it = enTopLine.begin();
+                  it != enTopLine.end();
+                  ++it
+            ) {
+                (*it)->render();
+            }
+            for ( auto it = enBottomLine.begin();
+                  it != enBottomLine.end();
+                  ++it
+            ) {
+                (*it)->render();
+            }
+
+            // Update screen
+            SDL_RenderPresent( gRenderer );
+            SDL_Delay(1);
         }
     }
 }

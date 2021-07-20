@@ -124,20 +124,20 @@ namespace SPACESHIP {
     }
 
     // TODO: перемещение сделано отвратительно, переделать
-    void spaceship::move(double timeDelta)
+    void spaceship::integrate( uint8_t state, unsigned int time, unsigned int timeDelta )
     {
         const long msPerMovement = 400; // двигаем на 1 пиксель раз в 2000 ми? секунд
 
-//        tRemForStep += timeDelta % msPerMovement;
-        const int steps = ( timeDelta + tRemForStep ) / msPerMovement;
+        accumForStep += timeDelta;
+        const int steps = ( timeDelta + accumForStep ) / msPerMovement;
 
         //        if ( steps == 0 )
         //            return;
 
         const long stepPoints = steps * msPerMovement;
 
-        if ( stepPoints < tRemForStep)
-            tRemForStep -= stepPoints;
+        if ( stepPoints < accumForStep)
+            accumForStep -= stepPoints;
 
         if ( ms[ MODEL::Mdirection::left ] >= 1 ) {
             ms[ MODEL::Mdirection::left ] -= 1;

@@ -28,7 +28,6 @@ namespace BACKGROUND {
             uint16_t screenW,
             uint16_t /* screenH */
     ) {
-        tRemForStep = 0;
         double windowSF = ( double ) screenW / ( double ) sprites[0].first->width; // window scaling factor
         const int w = sprites[0].first->width * windowSF;
         assetHeight = sprites[0].first->heigth * windowSF;
@@ -47,18 +46,19 @@ namespace BACKGROUND {
         };
     }
 
-    void background::move(double timeDelta) {
+    void background::integrate( uint8_t state, unsigned int time, unsigned int timeDelta )
+    {
         const double msPerMovement = 0.001; // совершаем движение раз в x ми? секунд
 
-        tRemForStep += timeDelta;
-        const long steps = tRemForStep / msPerMovement;
+        accumForStep += timeDelta;
+        const long steps = accumForStep / msPerMovement;
         if ( steps == 0 )
             return;
 
         const long stepPoints = steps * msPerMovement;
 
-        if ( stepPoints <= tRemForStep)
-            tRemForStep -= stepPoints;
+        if ( stepPoints <= accumForStep)
+            accumForStep -= stepPoints;
 
         for( auto it = sprites.begin();
                 it != sprites.end();

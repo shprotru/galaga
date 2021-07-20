@@ -12,7 +12,6 @@ namespace SPACESHIP {
         uint16_t spriteHeight; // высота видимого спрайта
         double lastMouseOx;
         double lastMouseOy;
-        long tRemForStep; // остаток времени от дельты при движении
         static const uint16_t framesAmountAnimDeath = 4;
         ASSETS::spriteInfo *sprite;
         std::array<ASSETS::spriteInfo *, framesAmountAnimDeath> animDeath;
@@ -24,7 +23,7 @@ namespace SPACESHIP {
         );
         ~spaceship();
 
-        void move(double timeDelta);
+        void integrate( uint8_t state, unsigned int time, unsigned int timeDelta );
         void render();
         void setInitPosition( uint16_t screenW, uint16_t screenH );
 

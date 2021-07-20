@@ -7,7 +7,6 @@ namespace ENEMY2 {
     class enemy2 : MODEL::Basic, MODEL::PModel, MODEL::IModel
     {
         uint16_t currAnimFrame; // текущий фрейм анимации
-        double tRemForStep; // остаток времени от дельты при движении
         static const uint16_t anim_amount_frames = 2;
         static const uint16_t anim_death_amount_frames = 5;
         std::array<ASSETS::spriteInfo *, anim_death_amount_frames> animWalk;
@@ -20,7 +19,7 @@ namespace ENEMY2 {
         );
         ~enemy2();
 
-        void move(double timeDelta);
+        void integrate( uint8_t state, unsigned int time, unsigned int timeDelta );
         void render();
         void setInitPosition( uint16_t screenW, uint16_t screenH );
         void setPosition( uint16_t posX, uint16_t posY );

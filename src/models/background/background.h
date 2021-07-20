@@ -10,7 +10,6 @@
 namespace BACKGROUND {
     class background : MODEL::Basic, MODEL::IModel
     {
-        double tRemForStep; // остаток времени от дельты при движении
         int assetHeight;  // высота изображения
         static const uint16_t framesAmountCntBg = 2;
         //                                       si       pos
@@ -23,7 +22,7 @@ namespace BACKGROUND {
         );
         ~background();
 
-        void move(double timeDelta);
+        void integrate( uint8_t state, unsigned int time, unsigned int timeDelta );
         void render();
         void setInitPosition( uint16_t screenW, uint16_t screenH );
     };

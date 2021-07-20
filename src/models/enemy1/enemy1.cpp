@@ -57,7 +57,6 @@ namespace ENEMY1 {
             uint16_t posX,
             uint16_t posY
     ) {
-        tRemForStep = 0;
         currAnimFrame = 1; // для инициализации
         state = MODEL::Mstate::alive;
 
@@ -75,23 +74,23 @@ namespace ENEMY1 {
         };
     }
 
-    void enemy1::move(double timeDelta)
+    void enemy1::integrate( uint8_t state, unsigned int time, unsigned int timeDelta )
     {
         if ( state == MODEL::Mstate::initialized ) {
             return;
         }
 
-        static const double msPerMovement = 1.5; // совершаем движение раз в 1.5 секунды
+        static const unsigned int msPerMovement = 1000; // совершаем движение раз в 1.5 секунды
 
-        tRemForStep += timeDelta;
-        const long steps = tRemForStep / msPerMovement;
+        accumForStep += timeDelta;
+        const unsigned int steps = accumForStep / msPerMovement;
         if ( steps == 0 )
             return;
 
-        const long stepPoints = steps * msPerMovement;
+        const unsigned int stepPoints = steps * msPerMovement;
 
-        if ( stepPoints <= tRemForStep)
-            tRemForStep -= stepPoints;
+        if ( stepPoints <= accumForStep)
+            accumForStep -= stepPoints;
 
         currAnimFrame++;
         if ( currAnimFrame == anim_amount_frames )
