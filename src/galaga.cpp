@@ -1,5 +1,6 @@
 #include <array>
 #include <chrono>
+#include <memory>
 
 #include "models/background/background.h"
 #include "config.h"
@@ -38,7 +39,7 @@ namespace GALAGA {
         }
 
         // Создаём рендерер
-        gRenderer = SDL_CreateRenderer( gWindow, -1, SDL_RENDERER_ACCELERATED );
+        gRenderer = SDL_CreateRenderer( gWindow, -1, SDL_RENDERER_ACCELERATED /* & SDL_RENDERER_PRESENTVSYNC */ );
         if( gRenderer == nullptr )
         {
             std::cout << "Renderer could not be created! SDL Error: " << SDL_GetError() << std::endl;
@@ -112,8 +113,6 @@ namespace GALAGA {
 
         setCursor( asLdr );
 
-        const long timeScalingFactor = 10000;
-
         auto bg = BACKGROUND::background( gRenderer, flip, asLdr );
         bg.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
 
@@ -121,48 +120,35 @@ namespace GALAGA {
         p1.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
 
         static const uint8_t enAmountTopLine = 4;
-        std::array<ENEMY1::enemy1 *, enAmountTopLine> enTopLine;    // enemies, верхний ряд
+        std::array<std::unique_ptr<ENEMY1::enemy1>, enAmountTopLine> enTopLine;    // enemies, верхний ряд
         for ( auto it = std::make_pair( enTopLine.begin(), 0 );
               it.first != enTopLine.end();
               ++it.first
         ) {
-            *it.first = new ENEMY1::enemy1( gRenderer, flip, asLdr );
+            *it.first = std::make_unique<ENEMY1::enemy1>( gRenderer, flip, asLdr );
             (*it.first)->setPosition( 90 + 120 * it.second, 60 );
             (*it.first)->setID(it.second);
             it.second++;
         }
 
-        defer(
-            for ( auto it = enTopLine.begin();
-                  it != enTopLine.end();
-                  ++it
-            ) {
-                delete *it;
-            }
-        );
-
         static const uint8_t enAmountBottomLine = 5;
-        std::array<ENEMY2::enemy2 *, enAmountBottomLine> enBottomLine; // enemies, нижний ряд
+        std::array<std::unique_ptr<ENEMY2::enemy2>, enAmountBottomLine> enBottomLine; // enemies, нижний ряд
         for ( auto it = std::make_pair( enBottomLine.begin(), 0 );
              it.first != enBottomLine.end();
              ++it.first
         ) {
-           *it.first = new ENEMY2::enemy2( gRenderer, flip, asLdr );
+           *it.first = std::make_unique<ENEMY2::enemy2>( gRenderer, flip, asLdr );
            (*it.first)->setPosition( 50 + 120 * it.second, 170 );
            it.second++;
         }
 
-        defer(
-           for ( auto it = enBottomLine.begin();
-                 it != enBottomLine.end();
-                 ++it
-           ) {
-               delete *it;
-           }
-        );
+        double t = 0.0; // Общий счётчик прошедшего времени
+        double dt = 1.0 / DESIRED_FRAMERATE;
+        double currentTime = SDL_GetTicks(); // текущее время
+        double accumulator = 0.0;
 
-        unsigned int t = 0; // Всего прошло времени
-        auto currentTime = SDL_GetTicks();
+        unsigned int frames = 0;
+        double avgFPS = 0.0;
 
         // Флаг выхода из цикла опроса
         bool quit = false;
@@ -198,45 +184,64 @@ namespace GALAGA {
                 }
             }
 
-            auto newTime = SDL_GetTicks();
+            double newTime = SDL_GetTicks();
             auto frameTime = newTime - currentTime; // времени пришлось на предыдущий фрейм
             currentTime = newTime;
+            accumulator += frameTime;
 
-            // Перемещения
-            bg.integrate( Gstate::gameplay, t, frameTime );
-            p1.integrate( Gstate::gameplay, t, frameTime );
-            for ( auto it = enTopLine.begin();
-                  it != enTopLine.end();
-                  ++it
-            ) {
-                (*it)->integrate( Gstate::gameplay, t, frameTime );
+            while ( accumulator > dt )
+            {
+                // Перемещения
+                bg.integrate( Gstate::gameplay, t, dt );
+                p1.integrate( Gstate::gameplay, t, dt );
+                for ( auto it = enTopLine.begin();
+                      it != enTopLine.end();
+                      ++it
+                ) {
+                    (*it)->integrate( Gstate::gameplay, t, dt );
+                }
+                for ( auto it = enBottomLine.begin();
+                      it != enBottomLine.end();
+                      ++it
+                ) {
+                    (*it)->integrate( Gstate::gameplay, t, dt );
+                }
+
+                accumulator -= dt;
+                t += dt;
             }
-            for ( auto it = enBottomLine.begin();
-                  it != enBottomLine.end();
-                  ++it
-            ) {
-                (*it)->integrate( Gstate::gameplay, t, frameTime );
+
+
+            { // render
+                // Отрисовываем
+                SDL_SetRenderDrawColor( gRenderer, 111, 111, 111, 0xff );
+                SDL_RenderClear( gRenderer );
+
+                bg.render();
+                p1.render();
+                for ( auto it = enTopLine.begin();
+                      it != enTopLine.end();
+                      ++it
+                ) {
+                    (*it)->render();
+                }
+                for ( auto it = enBottomLine.begin();
+                      it != enBottomLine.end();
+                      ++it
+                ) {
+                    (*it)->render();
+                }
             }
 
-            t += frameTime;
+            frames++;
 
-            // Отрисовываем
-            SDL_SetRenderDrawColor( gRenderer, 111, 111, 111, 0xff );
-            SDL_RenderClear( gRenderer );
+            if ( t != 0.0 ){
+                avgFPS = static_cast<double>( frames ) / ( t ) ;
 
-            bg.render();
-            p1.render();
-            for ( auto it = enTopLine.begin();
-                  it != enTopLine.end();
-                  ++it
-            ) {
-                (*it)->render();
-            }
-            for ( auto it = enBottomLine.begin();
-                  it != enBottomLine.end();
-                  ++it
-            ) {
-                (*it)->render();
+                if( avgFPS > 0 )
+                {
+                    std::cout << "fps: " << avgFPS << std::endl;
+                }
             }
 
             // Update screen
