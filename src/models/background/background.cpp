@@ -1,4 +1,4 @@
-#include "background.h"
+﻿#include "background.h"
 #include "../../config.h"
 
 namespace BACKGROUND {
@@ -46,7 +46,7 @@ namespace BACKGROUND {
         };
     }
 
-    void background::integrate( uint8_t state, unsigned int time, unsigned int timeDelta )
+    void background::integrate( SDL_Rect &pos, double time, double timeDelta )
     {
         const double msPerMovement = 0.001; // совершаем движение раз в x ми? секунд
 
@@ -72,7 +72,7 @@ namespace BACKGROUND {
         }
     }
 
-    void background::render() {
+    void background::render( SDL_Rect pos ) {
         for( auto it = sprites.begin();
                 it != sprites.end();
                 ++it )

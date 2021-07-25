@@ -1,6 +1,7 @@
 #ifndef GALAGA_H
 #define GALAGA_H
 
+// #include <memory>
 #include <iostream>
 #include <SDL2/SDL.h>
 
@@ -9,9 +10,20 @@
 namespace GALAGA {
     class galaga
     {
-        SDL_Cursor* cursor;
-        SDL_Window* gWindow;
-        SDL_Renderer* gRenderer;
+        /*
+        struct SDLCursorDestroyer
+        {
+            void operator()(SDL_Cursor* c) const
+            {
+                SDL_FreeCursor(c);
+            }
+        };
+
+        std::unique_ptr<SDL_Cursor, SDLCursorDestroyer > cursor;
+        */
+        SDL_Cursor *cursor;
+        SDL_Window *gWindow;
+        SDL_Renderer *gRenderer;
 
         bool setCursor(ASSETS::loader &ldr);
     public:

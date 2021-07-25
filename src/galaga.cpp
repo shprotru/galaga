@@ -6,7 +6,7 @@
 #include "config.h"
 #include "misc/defer.h"
 #include "models/enemy1/enemy1.h"
-#include "models/enemy2/enemy2.h"
+//#include "models/enemy2/enemy2.h"
 #include "galaga.h"
 #include "models/spaceship/spaceship.h"
 
@@ -91,7 +91,7 @@ namespace GALAGA {
                     srfcImage,
                     srfcImage->w / 2,
                     srfcImage->h / 2);
-        if( cursor == nullptr )
+        if ( cursor == nullptr )
         {
             std::cout << "Failure: Cursor could not be created! SDL Error: " << SDL_GetError() << std::endl;
             return false;
@@ -131,21 +131,14 @@ namespace GALAGA {
             it.second++;
         }
 
-        static const uint8_t enAmountBottomLine = 5;
-        std::array<std::unique_ptr<ENEMY2::enemy2>, enAmountBottomLine> enBottomLine; // enemies, нижний ряд
-        for ( auto it = std::make_pair( enBottomLine.begin(), 0 );
-             it.first != enBottomLine.end();
-             ++it.first
-        ) {
-           *it.first = std::make_unique<ENEMY2::enemy2>( gRenderer, flip, asLdr );
-           (*it.first)->setPosition( 50 + 120 * it.second, 170 );
-           it.second++;
-        }
-
-        double t = 0.0; // Общий счётчик прошедшего времени
-        double dt = 1.0 / DESIRED_FRAMERATE;
+        double timeFromGameStart = 0.0; // Общий счётчик прошедшего времени
+        const double timeStep = 0.01;
+//        double dt = 1.0 / DESIRED_FRAMERATE;
         double currentTime = SDL_GetTicks(); // текущее время
         double accumulator = 0.0;
+
+        SDL_Rect previousState;
+        SDL_Rect currentState;
 
         unsigned int frames = 0;
         double avgFPS = 0.0;
@@ -186,59 +179,58 @@ namespace GALAGA {
 
             double newTime = SDL_GetTicks();
             auto frameTime = newTime - currentTime; // времени пришлось на предыдущий фрейм
+
+            if ( frameTime > 0.25 )
+                frameTime = 0.25;
+
             currentTime = newTime;
             accumulator += frameTime;
 
-            while ( accumulator > dt )
+            while ( accumulator >= timeStep )
             {
+                previousState = currentState;
+
                 // Перемещения
-                bg.integrate( Gstate::gameplay, t, dt );
-                p1.integrate( Gstate::gameplay, t, dt );
+                bg.integrate( currentState, timeFromGameStart, timeStep );
+                p1.integrate( currentState, timeFromGameStart, timeStep );
                 for ( auto it = enTopLine.begin();
                       it != enTopLine.end();
                       ++it
                 ) {
-                    (*it)->integrate( Gstate::gameplay, t, dt );
-                }
-                for ( auto it = enBottomLine.begin();
-                      it != enBottomLine.end();
-                      ++it
-                ) {
-                    (*it)->integrate( Gstate::gameplay, t, dt );
+                    (*it)->integrate( currentState, timeFromGameStart, timeStep );
                 }
 
-                accumulator -= dt;
-                t += dt;
+                timeFromGameStart += timeStep;
+                accumulator -= timeStep;
             }
 
+            const double alpha = accumulator / timeStep;
+
+            SDL_Rect state;
+//            SDL_Rect state = currentState * alpha +
+//                previousState * ( 1.0 - alpha );
 
             { // render
                 // Отрисовываем
                 SDL_SetRenderDrawColor( gRenderer, 111, 111, 111, 0xff );
                 SDL_RenderClear( gRenderer );
 
-                bg.render();
-                p1.render();
+                bg.render( state );
+                p1.render( state );
                 for ( auto it = enTopLine.begin();
                       it != enTopLine.end();
                       ++it
                 ) {
-                    (*it)->render();
-                }
-                for ( auto it = enBottomLine.begin();
-                      it != enBottomLine.end();
-                      ++it
-                ) {
-                    (*it)->render();
+                    (*it)->render( state );
                 }
             }
 
             frames++;
 
-            if ( t != 0.0 ){
-                avgFPS = static_cast<double>( frames ) / ( t ) ;
+            if ( timeFromGameStart != 0.0 ) {
+                avgFPS = static_cast<double>( frames ) / ( timeFromGameStart ) ;
 
-                if( avgFPS > 0 )
+                if ( avgFPS > 0 )
                 {
                     std::cout << "fps: " << avgFPS << std::endl;
                 }
@@ -246,7 +238,7 @@ namespace GALAGA {
 
             // Update screen
             SDL_RenderPresent( gRenderer );
-            SDL_Delay(1);
+            SDL_Delay( 10 );
         }
     }
 }

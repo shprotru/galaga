@@ -75,7 +75,7 @@ namespace ENEMY2 {
         };
     }
 
-    void enemy2::integrate( uint8_t state, unsigned int time, unsigned int timeDelta )
+    void enemy2::integrate( SDL_Rect &pos, double time, double timeDelta )
     {
         if ( state == MODEL::Mstate::initialized ) {
             return;
@@ -119,7 +119,7 @@ namespace ENEMY2 {
         }
     }
 
-    void enemy2::render()
+    void enemy2::render( SDL_Rect pos )
     {
         switch ( state ) {
         case MODEL::Mstate::appearance:

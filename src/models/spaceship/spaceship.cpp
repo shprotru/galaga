@@ -124,7 +124,7 @@ namespace SPACESHIP {
     }
 
     // TODO: перемещение сделано отвратительно, переделать
-    void spaceship::integrate( uint8_t state, unsigned int time, unsigned int timeDelta )
+    void spaceship::integrate( SDL_Rect &pos, double time, double timeDelta )
     {
         const long msPerMovement = 400; // двигаем на 1 пиксель раз в 2000 ми? секунд
 
@@ -160,7 +160,7 @@ namespace SPACESHIP {
         }
     }
 
-    void spaceship::render()
+    void spaceship::render( SDL_Rect pos )
     {
         SDL_RenderCopyEx( gRenderer, sprite->texture, nullptr, &position, angle, nullptr, flip );
     }

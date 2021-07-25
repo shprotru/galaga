@@ -58,7 +58,7 @@ add_executable( MyProject
     src/models/model.cpp
     src/models/basic.cpp
     src/models/enemy1/enemy1.cpp
-    src/models/enemy2/enemy2.cpp
+#    src/models/enemy2/enemy2.cpp
     src/models/spaceship/spaceship.cpp
     src/models/background/background.cpp
 )

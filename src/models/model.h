@@ -23,8 +23,8 @@ namespace MODEL {
     class IModel
     {
     public:
-        virtual void integrate( uint8_t state, unsigned int time, unsigned int timeDelta ) = 0;
-        virtual void render() = 0;
+        virtual void integrate( SDL_Rect &pos, double time, double timeDelta ) = 0;
+        virtual void render( SDL_Rect pos ) = 0;
         virtual void setInitPosition( uint16_t screenW, uint16_t screenH ) = 0;
     };
 

@@ -13,7 +13,7 @@ namespace ENEMY1 {
         gRenderer = renderer;
         state = MODEL::Mstate::initialized;
 
-        for( auto it = std::make_pair( animWalk.begin(), ASSETS::enemy1_frame1 ) ;
+        for ( auto it = std::make_pair( animWalk.begin(), ASSETS::enemy1_frame1 ) ;
                 it.first != animWalk.end();
                 ++it.first )
         {
@@ -21,7 +21,7 @@ namespace ENEMY1 {
             it.second = static_cast<ASSETS::imageID>( it.second + 1 );
         }
 
-        for( auto it = std::make_pair( animDying.begin(), ASSETS::enemy_death1 ) ;
+        for ( auto it = std::make_pair( animDying.begin(), ASSETS::enemy_death1 ) ;
                 it.first != animDying.end();
                 ++it.first )
         {
@@ -32,12 +32,12 @@ namespace ENEMY1 {
 
     enemy1::~enemy1()
     {
-        for( auto it = animWalk.begin(); it != animWalk.end(); ++it ) {
+        for ( auto it = animWalk.begin(); it != animWalk.end(); ++it ) {
             delete *it;
         }
         std::cout << typeid(enemy1).name() << " walk sprites freed" << std::endl;
 
-        for( auto it = animDying.begin(); it != animDying.end(); ++it ) {
+        for ( auto it = animDying.begin(); it != animDying.end(); ++it ) {
             delete *it;
         }
         std::cout << typeid(enemy1).name() << " dying sprites freed" << std::endl;
@@ -74,7 +74,7 @@ namespace ENEMY1 {
         };
     }
 
-    void enemy1::integrate( uint8_t state, unsigned int time, unsigned int timeDelta )
+    void enemy1::integrate( SDL_Rect & /* pos */, double time, double timeDelta )
     {
         if ( state == MODEL::Mstate::initialized ) {
             return;
@@ -82,19 +82,20 @@ namespace ENEMY1 {
 
         static const unsigned int msPerMovement = 1000; // совершаем движение раз в 1.5 секунды
 
-        accumForStep += timeDelta;
-        const unsigned int steps = accumForStep / msPerMovement;
-        if ( steps == 0 )
-            return;
+//        accumForStep += timeDelta;
+//        const unsigned int steps = accumForStep / msPerMovement;
+//        if ( steps == 0 )
+//            return;
 
-        const unsigned int stepPoints = steps * msPerMovement;
+//        const unsigned int stepPoints = steps * msPerMovement;
 
-        if ( stepPoints <= accumForStep)
-            accumForStep -= stepPoints;
+//        if ( stepPoints <= accumForStep)
+//            accumForStep -= stepPoints;
 
-        currAnimFrame++;
-        if ( currAnimFrame == anim_amount_frames )
-            currAnimFrame = 0;
+//        currAnimFrame++;
+//        if ( currAnimFrame == anim_amount_frames )
+//            currAnimFrame = 0;
+        currAnimFrame = static_cast<int>( time / 10 ) % 2;
 
         switch ( state ) {
         case MODEL::Mstate::alive:
@@ -118,7 +119,7 @@ namespace ENEMY1 {
         }
     }
 
-    void enemy1::render()
+    void enemy1::render( SDL_Rect /* pos */ )
     {
         switch ( state ) {
         case MODEL::Mstate::appearance:

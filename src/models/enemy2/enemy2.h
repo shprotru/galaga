@@ -19,8 +19,8 @@ namespace ENEMY2 {
         );
         ~enemy2();
 
-        void integrate( uint8_t state, unsigned int time, unsigned int timeDelta );
-        void render();
+        void integrate( SDL_Rect &pos, double time, double timeDelta );
+        void render( SDL_Rect pos );
         void setInitPosition( uint16_t screenW, uint16_t screenH );
         void setPosition( uint16_t posX, uint16_t posY );
     };
