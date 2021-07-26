@@ -2,17 +2,19 @@
 #define ENEMY1_H
 
 #include "../model.h"
+#include "../gun/gun.h"
 
 namespace ENEMY1 {
     class enemy1 : MODEL::Basic, MODEL::PModel, MODEL::IModel
     {
         uint16_t currAnimFrame; // текущий фрейм анимации
         double tRemForStep; // остаток времени от дельты при движении
-        static const uint16_t anim_amount_frames = 2;
         static const uint16_t anim_death_amount_frames = 5;
         std::array<ASSETS::spriteInfo *, anim_death_amount_frames> animWalk;
         std::array<ASSETS::spriteInfo *, anim_death_amount_frames> animDying;
         int id;
+        GUN::gun gun;
+        int movementLimit;
     public:
         enemy1(
             SDL_Renderer* renderer,

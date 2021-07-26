@@ -1,4 +1,4 @@
-#include "background.h"
+﻿#include "background.h"
 #include "../../config.h"
 
 namespace BACKGROUND {

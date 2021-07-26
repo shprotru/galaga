@@ -14,10 +14,16 @@ namespace TIMER {
         mStartTicks = SDL_GetTicks();
     }
 
-    void timer::update() {
+    void timer::update()
+    {
         mElapsedTicks = SDL_GetTicks() - mStartTicks;
         //Converting milliseconds to seconds
         mDeltaTime = mElapsedTicks * 0.001;
+    }
+
+    Uint32 timer::elapsed()
+    {
+        return mElapsedTicks;
     }
 
     double timer::delta()
@@ -25,13 +31,13 @@ namespace TIMER {
         return mDeltaTime;
     }
 
-    void timer::timeScale(double t)
-    {
-        mTimeScale = t;
-    }
-
-    double timer::timeScale()
-    {
-        return mTimeScale;
-    }
+//    void timer::timeScale(double t)
+//    {
+//        mTimeScale = t;
+//    }
+//
+//    double timer::timeScale()
+//    {
+//        return mTimeScale;
+//    }
 }

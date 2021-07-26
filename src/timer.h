@@ -16,8 +16,9 @@ namespace TIMER {
         void reset();
         void update();
         double delta();
-        void timeScale(double t);
-        double timeScale();
+        Uint32 elapsed();
+//        void timeScale(double t);
+//        double timeScale();
     };
 }
 

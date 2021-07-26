@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "../model.h"
+#include "../gun/gun.h"
 
 namespace SPACESHIP {
     class spaceship : MODEL::Basic, MODEL::PModel, MODEL::IModel
@@ -16,6 +17,7 @@ namespace SPACESHIP {
         static const uint16_t framesAmountAnimDeath = 4;
         ASSETS::spriteInfo *sprite;
         std::array<ASSETS::spriteInfo *, framesAmountAnimDeath> animDeath;
+        GUN::gun gun;
     public:
         spaceship(
             SDL_Renderer* renderer,

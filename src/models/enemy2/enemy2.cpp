@@ -7,7 +7,7 @@ namespace ENEMY2 {
         SDL_Renderer* renderer,
         SDL_RendererFlip flp,  // Нужно для рендеринга
         ASSETS::loader &ldr
-    )
+    ) : gun(&angle, GUN::Gtype::player)
     {
         flip = flp;
         gRenderer = renderer;
@@ -67,6 +67,9 @@ namespace ENEMY2 {
         halfWidth = w / 2;
         halfHeight =  h / 2;
 
+        movementLimit = ( SCREEN_WIDTH - w * 4 ) / ( 2 * SCALING_FACTOR );
+        ms[MODEL::Mdirection::right] = movementLimit; // 50
+
         position = {
             posX - halfWidth,
             posY - halfHeight,
@@ -94,19 +97,23 @@ namespace ENEMY2 {
             tRemForStep -= stepPoints;
 
         currAnimFrame++;
-        if ( currAnimFrame == anim_amount_frames )
-            currAnimFrame = 0;
 
         switch ( state ) {
         case MODEL::Mstate::alive:
-            if ( ms[ MODEL::Mdirection::left ] >= 1 ) {
-                ms[ MODEL::Mdirection::left ] -= 1;
+            if (ms[MODEL::Mdirection::left] >= 1) {
+                ms[MODEL::Mdirection::left] -= 1;
                 position.x -= SCALING_FACTOR; // ( ms[ MODEL::Mdirection::left ] / SCALING_FACTOR + 1 );
+                if( ms[MODEL::Mdirection::left] == 0 || ms[MODEL::Mdirection::left] == 1 ) {
+                    ms[MODEL::Mdirection::right] = movementLimit;
+                }
             }
 
-            if ( ms[ MODEL::Mdirection::right ] >= 1 ) {
-                ms[ MODEL::Mdirection::right ] -= 1;
+            if (ms[MODEL::Mdirection::right] >= 1) {
+                ms[MODEL::Mdirection::right] -= 1;
                 position.x += SCALING_FACTOR; // ( ms[ MODEL::Mdirection::right ] / SCALING_FACTOR + 1 );
+                if( ms[MODEL::Mdirection::right] == 0 || ms[MODEL::Mdirection::right] == 1 ) {
+                    ms[MODEL::Mdirection::left] = movementLimit;
+                }
             }
 
             break;
@@ -124,7 +131,7 @@ namespace ENEMY2 {
         switch ( state ) {
         case MODEL::Mstate::appearance:
         case MODEL::Mstate::alive:
-            SDL_RenderCopyEx( gRenderer, animWalk[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );
+            SDL_RenderCopyEx( gRenderer, animWalk[currAnimFrame % 2]->texture, nullptr, &position, angle, nullptr, flip );
             break;
         case MODEL::Mstate::dying:
             SDL_RenderCopyEx( gRenderer, animDying[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );

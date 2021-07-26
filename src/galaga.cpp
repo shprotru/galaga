@@ -1,5 +1,5 @@
-#include <chrono>
 #include <array>
+#include <memory>
 
 #include "models/background/background.h"
 #include "config.h"
@@ -105,7 +105,6 @@ namespace GALAGA {
 
         setCursor( asLdr );
 
-        const long timeScalingFactor = 10000;
         auto mTimer = TIMER::timer();
 
         auto bg = BACKGROUND::background( gRenderer, flip, asLdr );
@@ -114,46 +113,28 @@ namespace GALAGA {
         auto p1 = SPACESHIP::spaceship( gRenderer, flip, asLdr );
         p1.setInitPosition( SCREEN_WIDTH, SCREEN_HEIGHT );
 
-        static const uint8_t enAmountTopLine = 4;
-        std::array<ENEMY1::enemy1 *, enAmountTopLine> enTopLine;    // enemies, верхний ряд
+        std::array<std::unique_ptr<ENEMY1::enemy1>, TOP_MON_PER_ROW> enTopLine;    // enemies, верхний ряд
         for ( auto it = std::make_pair( enTopLine.begin(), 0 );
               it.first != enTopLine.end();
               ++it.first
         ) {
-            *it.first = new ENEMY1::enemy1( gRenderer, flip, asLdr );
-            (*it.first)->setPosition( 90 + 120 * it.second, 60 );
+            *it.first = std::make_unique<ENEMY1::enemy1>( gRenderer, flip, asLdr );
+            (*it.first)->setPosition( TOP_MON_OFFSET + MON_DISTANCE * it.second, 60 );
             (*it.first)->setID(it.second);
             it.second++;
         }
 
-        defer(
-            for ( auto it = enTopLine.begin();
-                  it != enTopLine.end();
-                  ++it
-            ) {
-                delete *it;
-            }
-        );
-
         static const uint8_t enAmountBottomLine = 5;
-        std::array<ENEMY2::enemy2 *, enAmountBottomLine> enBottomLine; // enemies, нижний ряд
+        std::array<std::unique_ptr<ENEMY2::enemy2>, enAmountBottomLine> enBottomLine; // enemies, нижний ряд
         for ( auto it = std::make_pair( enBottomLine.begin(), 0 );
              it.first != enBottomLine.end();
              ++it.first
         ) {
-           *it.first = new ENEMY2::enemy2( gRenderer, flip, asLdr );
-           (*it.first)->setPosition( 50 + 120 * it.second, 170 );
+           *it.first = std::make_unique<ENEMY2::enemy2>( gRenderer, flip, asLdr );
+           (*it.first)->setPosition( BOTTOM_MON_OFFSET + MON_DISTANCE * it.second, 170 );
+           (*it.first)->setID(it.second);
            it.second++;
         }
-
-        defer(
-           for ( auto it = enBottomLine.begin();
-                 it != enBottomLine.end();
-                 ++it
-           ) {
-               delete *it;
-           }
-        );
 
         // Флаг выхода из цикла опроса
         bool quit = false;
@@ -167,6 +148,9 @@ namespace GALAGA {
                 switch( ev.type ) {
                 case SDL_QUIT:
                     quit = true;
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    p1.onFire();
                     break;
                 case SDL_KEYDOWN:
                     switch( ev.key.keysym.sym )
@@ -199,8 +183,8 @@ namespace GALAGA {
                 SDL_RenderClear( gRenderer );
 
                 // Перемещения
-                bg.move(mTimer.delta());
-                p1.move(mTimer.delta());
+                bg.move( mTimer.delta() );
+                p1.move( mTimer.delta() );
                 for ( auto it = enTopLine.begin();
                       it != enTopLine.end();
                       ++it

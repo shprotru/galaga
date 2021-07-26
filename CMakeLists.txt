@@ -61,6 +61,8 @@ add_executable( MyProject
     src/models/enemy2/enemy2.cpp
     src/models/spaceship/spaceship.cpp
     src/models/background/background.cpp
+    src/models/gun/gun.cpp
+    src/models/bullet/bullet.cpp
 )
 target_link_libraries(MyProject ${SDL2_LIBRARY})
 install(TARGETS MyProject RUNTIME DESTINATION ${BIN_DIR})

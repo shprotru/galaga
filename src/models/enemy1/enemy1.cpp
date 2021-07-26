@@ -3,57 +3,53 @@
 #include "enemy1.h"
 
 namespace ENEMY1 {
-    enemy1::enemy1 (
-        SDL_Renderer* renderer,
-        SDL_RendererFlip flp,  // Нужно для рендеринга
-        ASSETS::loader &ldr
-    )
-    {
+    enemy1::enemy1(
+            SDL_Renderer *renderer,
+            SDL_RendererFlip flp,  // Нужно для рендеринга
+            ASSETS::loader &ldr
+    ) : gun(&angle, GUN::Gtype::player) {
         flip = flp;
         gRenderer = renderer;
         state = MODEL::Mstate::initialized;
 
-        for( auto it = std::make_pair( animWalk.begin(), ASSETS::enemy1_frame1 ) ;
-                it.first != animWalk.end();
-                ++it.first )
-        {
+        for (auto it = std::make_pair(animWalk.begin(), ASSETS::enemy1_frame1);
+             it.first != animWalk.end();
+             ++it.first) {
             *it.first = ldr.loadTexture(it.second);
             it.second = static_cast<ASSETS::imageID>( it.second + 1 );
         }
 
-        for( auto it = std::make_pair( animDying.begin(), ASSETS::enemy_death1 ) ;
-                it.first != animDying.end();
-                ++it.first )
-        {
+        for (auto it = std::make_pair(animDying.begin(), ASSETS::enemy_death1);
+             it.first != animDying.end();
+             ++it.first) {
             *it.first = ldr.loadTexture(it.second);
             it.second = static_cast<ASSETS::imageID>( it.second + 1 );
         }
     }
 
-    enemy1::~enemy1()
-    {
-        for( auto it = animWalk.begin(); it != animWalk.end(); ++it ) {
+    enemy1::~enemy1() {
+        for (auto it = animWalk.begin(); it != animWalk.end(); ++it) {
             delete *it;
         }
         std::cout << typeid(enemy1).name() << " walk sprites freed" << std::endl;
 
-        for( auto it = animDying.begin(); it != animDying.end(); ++it ) {
+        for (auto it = animDying.begin(); it != animDying.end(); ++it) {
             delete *it;
         }
         std::cout << typeid(enemy1).name() << " dying sprites freed" << std::endl;
     }
 
-    void enemy1::setInitPosition (
+    void enemy1::setInitPosition(
             uint16_t /* screenW */,
             uint16_t /* screenH */
     ) {
-        if ( state != MODEL::Mstate::initialized ) {
+        if (state != MODEL::Mstate::initialized) {
             std::cout << typeid(enemy1).name() << " already initialized" << std::endl;
             return;
         }
     }
 
-    void enemy1::setPosition (
+    void enemy1::setPosition(
             uint16_t posX,
             uint16_t posY
     ) {
@@ -65,48 +61,56 @@ namespace ENEMY1 {
         const uint16_t h = animWalk[currAnimFrame]->heigth * SCALING_FACTOR;
 
         halfWidth = w / 2;
-        halfHeight =  h / 2;
+        halfHeight = h / 2;
+
+        initialX = posX;
+        initialY = posY;
+        movementLimit = ( SCREEN_WIDTH - w * 4 ) / ( 2 * SCALING_FACTOR );
+        ms[MODEL::Mdirection::right] = movementLimit; // 50
 
         position = {
-            posX - halfWidth,
-            posY - halfHeight,
-            w,
-            h
+                posX - halfWidth,
+                posY - halfHeight,
+                w,
+                h
         };
     }
 
-    void enemy1::move(double timeDelta)
-    {
-        if ( state == MODEL::Mstate::initialized ) {
+    void enemy1::move(double timeDelta) {
+        if (state != MODEL::Mstate::alive) {
             return;
         }
 
-        static const double msPerMovement = 1.5; // совершаем движение раз в 1.5 секунды
+        static const double msPerMovement = 1.3; // совершаем движение раз в 1.5 секунды
 
         tRemForStep += timeDelta;
         const long steps = tRemForStep / msPerMovement;
-        if ( steps == 0 )
+        if (steps == 0)
             return;
 
         const long stepPoints = steps * msPerMovement;
 
-        if ( stepPoints <= tRemForStep)
+        if (stepPoints <= tRemForStep)
             tRemForStep -= stepPoints;
 
         currAnimFrame++;
-        if ( currAnimFrame == anim_amount_frames )
-            currAnimFrame = 0;
 
-        switch ( state ) {
+        switch (state) {
         case MODEL::Mstate::alive:
-            if ( ms[ MODEL::Mdirection::left ] >= 1 ) {
-                ms[ MODEL::Mdirection::left ] -= 1;
+            if (ms[MODEL::Mdirection::left] >= 1) {
+                ms[MODEL::Mdirection::left] -= 1;
                 position.x -= SCALING_FACTOR; // ( ms[ MODEL::Mdirection::left ] / SCALING_FACTOR + 1 );
+                if( ms[MODEL::Mdirection::left] == 0 || ms[MODEL::Mdirection::left] == 1 ) {
+                    ms[MODEL::Mdirection::right] = movementLimit;
+                }
             }
 
-            if ( ms[ MODEL::Mdirection::right ] >= 1 ) {
-                ms[ MODEL::Mdirection::right ] -= 1;
+            if (ms[MODEL::Mdirection::right] >= 1) {
+                ms[MODEL::Mdirection::right] -= 1;
                 position.x += SCALING_FACTOR; // ( ms[ MODEL::Mdirection::right ] / SCALING_FACTOR + 1 );
+                if( ms[MODEL::Mdirection::right] == 0 || ms[MODEL::Mdirection::right] == 1 ) {
+                    ms[MODEL::Mdirection::left] = movementLimit;
+                }
             }
 
             break;
@@ -119,18 +123,18 @@ namespace ENEMY1 {
         }
     }
 
-    void enemy1::render()
-    {
-        switch ( state ) {
-        case MODEL::Mstate::appearance:
-        case MODEL::Mstate::alive:
-            SDL_RenderCopyEx( gRenderer, animWalk[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );
-            break;
-        case MODEL::Mstate::dying:
-            SDL_RenderCopyEx( gRenderer, animDying[currAnimFrame]->texture, nullptr, &position, angle, nullptr, flip );
-            break;
-        default:
-            break;
+    void enemy1::render() {
+        switch (state) {
+            case MODEL::Mstate::appearance:
+            case MODEL::Mstate::alive:
+                SDL_RenderCopyEx(gRenderer, animWalk[currAnimFrame % 2]->texture, nullptr, &position, angle, nullptr, flip);
+                break;
+            case MODEL::Mstate::dying:
+                SDL_RenderCopyEx(gRenderer, animDying[currAnimFrame]->texture, nullptr, &position, angle, nullptr,
+                                 flip);
+                break;
+            default:
+                break;
         }
     }
 }

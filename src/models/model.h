@@ -49,6 +49,8 @@ namespace MODEL {
         SDL_Rect position; // местоположение объекта
         uint16_t halfWidth; // половина ширины видимого спрайта
         uint16_t halfHeight; // половина высоты видимого спрайта
+        uint16_t initialX;
+        uint16_t initialY;
     public:
         PModel();
         ~PModel();

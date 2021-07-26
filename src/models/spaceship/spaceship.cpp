@@ -8,7 +8,7 @@ namespace SPACESHIP {
             SDL_Renderer* renderer,
             SDL_RendererFlip flp,
             ASSETS::loader &ldr
-    )
+    ) : gun(&angle, GUN::Gtype::player)
     {
         flip = flp;
         gRenderer = renderer;
@@ -121,6 +121,8 @@ namespace SPACESHIP {
         if ( state != MODEL::Mstate::alive ) {
             return;
         }
+
+        gun.fire( SDL_GetTicks(), position.x, position.y );
     }
 
     // TODO: перемещение сделано отвратительно, переделать
@@ -162,6 +164,13 @@ namespace SPACESHIP {
 
     void spaceship::render()
     {
-        SDL_RenderCopyEx( gRenderer, sprite->texture, nullptr, &position, angle, nullptr, flip );
+        SDL_RenderCopyEx(
+                gRenderer,
+                sprite->texture,
+                nullptr,
+                &position,
+                angle,
+                nullptr,
+                flip );
     }
 }
